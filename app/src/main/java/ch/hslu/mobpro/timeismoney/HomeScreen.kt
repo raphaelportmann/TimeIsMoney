@@ -7,11 +7,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -70,15 +72,32 @@ fun HomeScreen(navController: NavController) {
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        LazyColumn(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                        LazyColumn(modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()) {
                             items(entries.size) { entry ->
-                                Text(text = entries[entry], fontSize = 18.sp)
+                                Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween){
+                                    Column() {
+                                        Text(text = entries[entry], fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                        Text(text = "XX:XX - XX:XX (XXh XXm)", fontSize = 14.sp)
+                                    }
+                                    Button(onClick = {
+                                        var changedEntries = entries.toMutableList()
+                                        changedEntries.removeAt(entry)
+                                        entries = changedEntries
+                                    }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                                    ) {
+                                        Icon(Icons.Filled.Delete, "Delete")
+                                    }
+                                }
                             }
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         SelectBox(items = taskEntries, selectedItem) {
