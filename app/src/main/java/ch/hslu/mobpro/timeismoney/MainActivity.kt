@@ -25,6 +25,10 @@ import androidx.navigation.compose.rememberNavController
 import ch.hslu.mobpro.timeismoney.ui.theme.TimeIsMoneyTheme
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        const val CHANNEL_ID = "ch.hslu.mobpro.timeismoney.channel"
+        const val EXTRA_TASK = "TASK_NAME"
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

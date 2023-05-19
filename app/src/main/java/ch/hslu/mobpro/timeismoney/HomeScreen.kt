@@ -1,14 +1,17 @@
 package ch.hslu.mobpro.timeismoney
 
+import ch.hslu.mobpro.timeismoney.service.TimeService
 import android.app.DatePickerDialog
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK
 import ch.hslu.mobpro.timeismoney.components.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -36,6 +40,35 @@ fun HomeScreen(navController: NavController) {
     var selectedItem by remember { mutableStateOf("Rasen mähen") }
 
     val context = LocalContext.current
+    var isTimerRunning by remember { mutableStateOf(false) }
+    val serviceStoppedReceiver = remember {
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                isTimerRunning = false
+            }
+        }
+    }
+    DisposableEffect(Unit) {
+        val intentFilter = IntentFilter(TimeService.ACTION_SERVICE_STOPPED)
+        context.registerReceiver(serviceStoppedReceiver, intentFilter)
+
+        onDispose {
+            context.unregisterReceiver(serviceStoppedReceiver)
+        }
+    }
+    LaunchedEffect(isTimerRunning) {
+        val intent = Intent(context, TimeService::class.java)
+        if (isTimerRunning) {
+            intent.putExtra(EXTRA_TASK, selectedItem)
+            context.startService(intent)
+        } else {
+            context.stopService(intent)
+        }
+    }
+
+    BackHandler(enabled = isTimerRunning) {
+        isTimerRunning = false
+    }
 
     Scaffold(
         content = {
@@ -118,10 +151,10 @@ fun HomeScreen(navController: NavController) {
                         }
 
                         Spacer(modifier = Modifier.width(16.dp))
-                        Button(onClick = {
-                            entries = entries + selectedItem
-                        }) {
-                            Icon(Icons.Filled.PlayArrow, "Start")
+                        Button(
+                            onClick = { isTimerRunning = !isTimerRunning },
+                        ) {
+                            Icon(if (isTimerRunning) Icons.Filled.Done else Icons.Filled.PlayArrow, "Start")
                         }
                     }
                 }
