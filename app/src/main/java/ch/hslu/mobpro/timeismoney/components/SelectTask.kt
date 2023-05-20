@@ -10,12 +10,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ch.hslu.mobpro.timeismoney.room.Task
 
 @Composable
-fun SelectBox(
-    items: List<String>,
-    selectedItem: String,
-    onItemSelected: (String) -> Unit,
+fun SelectTask(
+    items: List<Task>? = null,
+    selected: Task? = null,
+    onItemSelected: (Task) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -25,7 +26,7 @@ fun SelectBox(
             .clickable { expanded = true }
     ) {
         Text(
-            text = selectedItem,
+            text = selected?.title ?: "Aufgabe auswählen",
             modifier = Modifier.padding(16.dp)
         )
 
@@ -33,7 +34,7 @@ fun SelectBox(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            items.forEach { item ->
+            items?.forEach { item ->
                 DropdownMenuItem(
                     onClick = {
                         onItemSelected(item)
@@ -41,7 +42,7 @@ fun SelectBox(
                     },
                     text = {
                         Text(
-                            text = item,
+                            text = item.title,
                             modifier = Modifier.padding(16.dp)
                         )
                     }

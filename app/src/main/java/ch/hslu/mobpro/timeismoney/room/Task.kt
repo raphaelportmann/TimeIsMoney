@@ -9,5 +9,9 @@ class Task {
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0
     @ColumnInfo(index = true)
-    var title: String? = null
+    var title: String = ""
+
+    constructor(title: String) {
+        this.title = title
+    }
 }

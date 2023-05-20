@@ -5,28 +5,29 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import ch.hslu.mobpro.timeismoney.room.Task
 
 @Composable
-fun CreateEntryDialog(
+fun CreateTaskDialog(
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var entryText by remember { mutableStateOf("") }
+    var taskText by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = "Neue Aufgabe") },
         text = {
             TextField(
-                value = entryText,
-                onValueChange = { entryText = it },
+                value = taskText,
+                onValueChange = { taskText = it },
                 placeholder = { Text(text = "Aufgabe eingeben") }
             )
         },
         confirmButton = {
             Button(
                 onClick = {
-                    onConfirm(entryText)
+                    onConfirm(taskText)
                     onDismiss()
                 }
             ) {

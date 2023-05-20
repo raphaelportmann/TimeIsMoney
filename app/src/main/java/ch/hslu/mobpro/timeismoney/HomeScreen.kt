@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,19 +26,20 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK
 import ch.hslu.mobpro.timeismoney.components.*
+import ch.hslu.mobpro.timeismoney.room.Task
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
 
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var entries by remember { mutableStateOf(emptyList<String>()) }
     var showDialog by remember { mutableStateOf(false) }
 
-    var taskEntries by remember { mutableStateOf(listOf("Rasen mähen", "Pflanzen giessen")) }
-    var selectedItem by remember { mutableStateOf("Rasen mähen") }
+    val allTasks by viewModel.allTasks.observeAsState()
+    var selectedTask by remember { mutableStateOf(allTasks?.firstOrNull()) }
 
     val context = LocalContext.current
     var isTimerRunning by remember { mutableStateOf(false) }
@@ -59,7 +61,7 @@ fun HomeScreen(navController: NavController) {
     LaunchedEffect(isTimerRunning) {
         val intent = Intent(context, TimeService::class.java)
         if (isTimerRunning) {
-            intent.putExtra(EXTRA_TASK, selectedItem)
+            intent.putExtra(EXTRA_TASK, selectedTask?.id)
             context.startService(intent)
         } else {
             context.stopService(intent)
@@ -133,8 +135,11 @@ fun HomeScreen(navController: NavController) {
                             .height(50.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        SelectBox(items = taskEntries, selectedItem) {
-                            selectedItem = it
+                        SelectTask(
+                            items = allTasks,
+                            selected = selectedTask,
+                        ) {
+                            selectedTask = it
                         }
                         Spacer(modifier = Modifier.weight(1f))
                         Button(onClick = {
@@ -144,8 +149,8 @@ fun HomeScreen(navController: NavController) {
                         }
 
                         if (showDialog) {
-                            CreateEntryDialog({
-                                taskEntries = taskEntries + it
+                            CreateTaskDialog({
+                                viewModel.addTask(it)
                                 showDialog = false
                             }) { showDialog = false }
                         }

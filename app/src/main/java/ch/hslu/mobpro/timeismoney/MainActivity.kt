@@ -1,5 +1,6 @@
 package ch.hslu.mobpro.timeismoney
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,8 +17,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -27,7 +31,7 @@ import ch.hslu.mobpro.timeismoney.ui.theme.TimeIsMoneyTheme
 class MainActivity : ComponentActivity() {
     companion object {
         const val CHANNEL_ID = "ch.hslu.mobpro.timeismoney.channel"
-        const val EXTRA_TASK = "TASK_NAME"
+        const val EXTRA_TASK = "TASK_ID"
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +42,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    TimeIsMoney()
+
+                    val owner = LocalViewModelStoreOwner.current
+
+                    owner?.let {
+                        val viewModel: MainViewModel = viewModel(
+                            it,
+                            "MainViewModel",
+                            MainViewModelFactory(
+                                LocalContext.current.applicationContext as Application
+                            )
+                        )
+                        TimeIsMoney(viewModel)
+                    }
+
                 }
             }
         }
@@ -46,7 +63,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, viewModel: MainViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -97,11 +114,11 @@ fun LoginScreen(navController: NavController) {
 
 
 @Composable
-fun TimeIsMoney() {
+fun TimeIsMoney(viewModel: MainViewModel) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "loginScreen") {
-        composable("loginScreen") { LoginScreen(navController) }
-        composable("homeScreen") { HomeScreen(navController) }
+        composable("loginScreen") { LoginScreen(navController, viewModel) }
+        composable("homeScreen") { HomeScreen(navController, viewModel) }
     }
 }
 
@@ -109,6 +126,6 @@ fun TimeIsMoney() {
 @Composable
 fun DefaultPreview() {
     TimeIsMoneyTheme {
-        TimeIsMoney()
+        TimeIsMoney(MainViewModel(Application()))
     }
 }
