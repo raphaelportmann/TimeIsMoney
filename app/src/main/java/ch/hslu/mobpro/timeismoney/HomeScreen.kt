@@ -25,10 +25,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK
+import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK_ID
 import ch.hslu.mobpro.timeismoney.components.*
+import ch.hslu.mobpro.timeismoney.room.Entry
 import ch.hslu.mobpro.timeismoney.room.Task
-import java.time.LocalDate
+import ch.hslu.mobpro.timeismoney.room.TaskEntry
+import java.time.*
 import java.time.format.DateTimeFormatter
+import kotlin.math.floor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +41,6 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
     val allEntries by viewModel.allEntries.observeAsState()
-
     val allTasks by viewModel.allTasks.observeAsState()
     var selectedTask by remember { mutableStateOf(allTasks?.firstOrNull()) }
 
@@ -47,6 +50,11 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 isTimerRunning = false
+                val startTime = intent?.getLongExtra("startTime", -1) ?: -1
+                val endTime = intent?.getLongExtra("endTime", -1) ?: -1
+                val taskId = intent?.getLongExtra("taskId", -1) ?: -1
+                viewModel.addEntry(startTime, endTime, taskId)
+                println("Added entry: " + taskId)
             }
         }
     }
@@ -61,7 +69,8 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
     LaunchedEffect(isTimerRunning) {
         val intent = Intent(context, TimeService::class.java)
         if (isTimerRunning) {
-            intent.putExtra(EXTRA_TASK, selectedTask?.id)
+            intent.putExtra(EXTRA_TASK, selectedTask?.title)
+            intent.putExtra(EXTRA_TASK_ID, selectedTask?.id)
             context.startService(intent)
         } else {
             context.stopService(intent)
@@ -110,15 +119,16 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                         LazyColumn(modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()) {
-                            items(allEntries?.size ?: 0) { entryIndex ->
+                            items(allEntries?.filter { taskEntry -> isTimestampOnDate(taskEntry.startTime, selectedDate)
+                            }?.size ?: 0) { entryIndex ->
                                 val entry = allEntries!![entryIndex]
                                 Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween){
                                     Column() {
-                                        Text(text = "Taskname of Entry", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                                        Text(text = "XX:XX - XX:XX (XXh XXm)", fontSize = 14.sp)
+                                        Text(text = entry.title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                        Text(text = getFormattedTimeStr(entry.startTime, entry.endTime), fontSize = 14.sp)
                                     }
                                     Button(onClick = {
-                                        viewModel.deleteEntry(entry)
+                                        viewModel.deleteEntry(entry.id)
                                     }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                                     ) {
                                         Icon(Icons.Filled.Delete, "Delete")
@@ -126,6 +136,16 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                                 }
                             }
                         }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Total: " + allEntries?.filter { taskEntry -> isTimestampOnDate(taskEntry.startTime, selectedDate) }
+                            ?.let { it -> getTotalTime(it) })
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
@@ -170,4 +190,33 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
             navController.navigate(it.screenName)
         })}
     )
+}
+
+fun isTimestampOnDate(timestamp: Long, date: LocalDate): Boolean {
+    val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
+    val dateTimeDate = dateTime.toLocalDate()
+    return dateTimeDate == date
+}
+
+fun getFormattedTimeStr(startTime: Long, endTime: Long): String {
+    val startDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(startTime), ZoneId.systemDefault())
+    val endDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(endTime), ZoneId.systemDefault())
+    val formatter = DateTimeFormatter.ofPattern("HH:mm")
+    val duration = Duration.between(startDateTime, endDateTime)
+    val hours = duration.toHours()
+    val minutes = duration.toMinutes() % 60
+    return startDateTime.format(formatter) + " - " + endDateTime.format(formatter) + " (" + String.format("%02dh %02dm", hours, minutes) + ")"
+}
+
+fun getTotalTime(entries: List<TaskEntry>): String {
+    var duration = 0L
+    entries.forEach {
+        val startDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.startTime), ZoneId.systemDefault())
+        val endDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.endTime), ZoneId.systemDefault())
+        duration += Duration.between(startDateTime, endDateTime).toMinutes()
+    }
+
+    val hours = floor(duration.toDouble() / 60).toInt()
+    val minutes = duration % 60
+    return String.format("%02dh %02dm", hours, minutes)
 }

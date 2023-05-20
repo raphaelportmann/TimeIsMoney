@@ -7,14 +7,24 @@ import android.graphics.Color
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK
+import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK_ID
+import ch.hslu.mobpro.timeismoney.MainViewModel
+import ch.hslu.mobpro.timeismoney.MainViewModelFactory
+import ch.hslu.mobpro.timeismoney.TimeIsMoney
 
 class TimeService : Service() {
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
     private var startTime: Long = 0
     private var task: String = ""
+    private var taskId: Long = -1
     private val NOTIFICATION_ID = 1365
     private val ACTION_STOP_SERVICE = "stop"
     private val channelId = "timer_channel"
@@ -32,6 +42,7 @@ class TimeService : Service() {
             runnable = Runnable { updateElapsedTime() }
             handler.postDelayed(runnable, 1000) // Update every second
             task = intent?.getStringExtra(EXTRA_TASK) ?: ""
+            taskId = intent?.getLongExtra(EXTRA_TASK_ID, -1) ?: -1
             // Create and display the foreground notification
             startForeground(NOTIFICATION_ID, createNotification())
         }
@@ -40,8 +51,7 @@ class TimeService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        println("Stop")
-        handler.removeCallbacks(runnable)
+        stopService()
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -106,6 +116,9 @@ class TimeService : Service() {
         stopSelf()
 
         val intent = Intent(ACTION_SERVICE_STOPPED)
+        intent.putExtra("startTime", startTime)
+        intent.putExtra("endTime", System.currentTimeMillis())
+        intent.putExtra("taskId", taskId)
         sendBroadcast(intent)
     }
 

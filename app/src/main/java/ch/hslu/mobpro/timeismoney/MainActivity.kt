@@ -31,7 +31,8 @@ import ch.hslu.mobpro.timeismoney.ui.theme.TimeIsMoneyTheme
 class MainActivity : ComponentActivity() {
     companion object {
         const val CHANNEL_ID = "ch.hslu.mobpro.timeismoney.channel"
-        const val EXTRA_TASK = "TASK_ID"
+        const val EXTRA_TASK = "TASK_NAME"
+        const val EXTRA_TASK_ID = "TASK_ID"
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

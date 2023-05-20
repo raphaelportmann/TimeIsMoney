@@ -10,7 +10,7 @@ class MainViewModel(application: Application) : ViewModel() {
     val allTasks: LiveData<List<Task>>
     private val taskRepository: TaskRepository
 
-    val allEntries: LiveData<List<Entry>>
+    val allEntries: LiveData<List<TaskEntry>>
     private val entryRepository: EntryRepository
 
     fun addTask(title: String) {
@@ -21,8 +21,8 @@ class MainViewModel(application: Application) : ViewModel() {
         entryRepository.insertEntry(Entry(startTime = startTime, endTime = endTime, taskId = taskId))
     }
 
-    fun deleteEntry(entry: Entry) {
-        entryRepository.deleteEntry(entry)
+    fun deleteEntry(entryId: Long) {
+        entryRepository.deleteEntry(entryId)
     }
 
     init {

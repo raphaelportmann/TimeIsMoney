@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class EntryRepository(private val entryDao: EntryDao) {
-    val allEntries: LiveData<List<Entry>> = entryDao.getEntries()
+    val allEntries: LiveData<List<TaskEntry>> = entryDao.getEntries()
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     fun insertEntry(entry: Entry) {
@@ -16,9 +16,9 @@ class EntryRepository(private val entryDao: EntryDao) {
         }
     }
 
-    fun deleteEntry(entry: Entry) {
+    fun deleteEntry(entryId: Long) {
         coroutineScope.launch(Dispatchers.IO) {
-            entryDao.deleteEntry(entry.id)
+            entryDao.deleteEntry(entryId)
         }
     }
 }

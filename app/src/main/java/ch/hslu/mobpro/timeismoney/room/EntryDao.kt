@@ -9,8 +9,8 @@ interface EntryDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertEntry(entry: Entry)
 
-    @Query("SELECT * FROM entries")
-    fun getEntries(): LiveData<List<Entry>>
+    @Query("SELECT entries.*, tasks.title FROM entries LEFT JOIN tasks ON tasks.id = entries.taskId")
+    fun getEntries(): LiveData<List<TaskEntry>>
 
     @Query("SELECT * FROM entries WHERE id = :id")
     fun getEntry(id: Long): LiveData<Entry>
