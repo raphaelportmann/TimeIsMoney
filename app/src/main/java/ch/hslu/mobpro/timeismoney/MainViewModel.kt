@@ -21,6 +21,10 @@ class MainViewModel(application: Application) : ViewModel() {
         entryRepository.insertEntry(Entry(startTime = startTime, endTime = endTime, taskId = taskId))
     }
 
+    fun deleteEntry(entry: Entry) {
+        entryRepository.deleteEntry(entry)
+    }
+
     init {
         val applicationDatabase = AppDatabase.getAppDatabase(application)
         val taskDao = applicationDatabase.taskDao()

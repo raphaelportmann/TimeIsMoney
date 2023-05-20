@@ -35,8 +35,8 @@ import java.time.format.DateTimeFormatter
 fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
 
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var entries by remember { mutableStateOf(emptyList<String>()) }
-    var showDialog by remember { mutableStateOf(false) }
+
+    val allEntries by viewModel.allEntries.observeAsState()
 
     val allTasks by viewModel.allTasks.observeAsState()
     var selectedTask by remember { mutableStateOf(allTasks?.firstOrNull()) }
@@ -110,16 +110,15 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                         LazyColumn(modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()) {
-                            items(entries.size) { entry ->
+                            items(allEntries?.size ?: 0) { entryIndex ->
+                                val entry = allEntries!![entryIndex]
                                 Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween){
                                     Column() {
-                                        Text(text = entries[entry], fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                        Text(text = "Taskname of Entry", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                                         Text(text = "XX:XX - XX:XX (XXh XXm)", fontSize = 14.sp)
                                     }
                                     Button(onClick = {
-                                        var changedEntries = entries.toMutableList()
-                                        changedEntries.removeAt(entry)
-                                        entries = changedEntries
+                                        viewModel.deleteEntry(entry)
                                     }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                                     ) {
                                         Icon(Icons.Filled.Delete, "Delete")
@@ -135,6 +134,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                             .height(50.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        var showDialog by remember { mutableStateOf(false) }
                         SelectTask(
                             items = allTasks,
                             selected = selectedTask,

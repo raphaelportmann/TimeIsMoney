@@ -72,7 +72,7 @@ class TimeService : Service() {
             this,
             0,
             stopIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val channel = NotificationChannel(
