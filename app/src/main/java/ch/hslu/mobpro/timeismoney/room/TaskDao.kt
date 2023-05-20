@@ -12,12 +12,12 @@ interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertTask(task: Task)
 
-    @Query("SELECT * FROM tasks")
-    fun getTasks(): LiveData<List<Task>>
+    @Query("SELECT * FROM tasks WHERE userId = :userId")
+    fun getTasks(userId: String): LiveData<List<Task>>
 
-    @Query("SELECT * FROM tasks WHERE id = :id")
-    fun getTask(id: Long): LiveData<Task>
+    @Query("SELECT * FROM tasks WHERE id = :id AND userId = :userId")
+    fun getTask(id: Long, userId: String): LiveData<Task>
 
-    @Query("DELETE FROM tasks WHERE id = :id")
-    fun deleteTask(id: Long)
+    @Query("DELETE FROM tasks WHERE id = :id AND userId = :userId")
+    fun deleteTask(id: Long, userId: String)
 }

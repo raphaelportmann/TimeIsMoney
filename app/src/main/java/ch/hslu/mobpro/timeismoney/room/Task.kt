@@ -10,6 +10,7 @@ class Task {
     var id: Long = 0
     @ColumnInfo(index = true)
     var title: String = ""
+    var userId: String = ""
 
     constructor(title: String) {
         this.title = title

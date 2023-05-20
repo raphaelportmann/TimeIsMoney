@@ -6,23 +6,34 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ch.hslu.mobpro.timeismoney.room.*
 
-class MainViewModel(application: Application) : ViewModel() {
-    val allTasks: LiveData<List<Task>>
+class MainViewModel(application: Application, private var userId: String) : ViewModel() {
+    var allTasks: LiveData<List<Task>>
     private val taskRepository: TaskRepository
 
-    val allEntries: LiveData<List<TaskEntry>>
+    var allEntries: LiveData<List<TaskEntry>>
     private val entryRepository: EntryRepository
 
     fun addTask(title: String) {
-        taskRepository.insertTask(Task(title = title))
+        taskRepository.insertTask(Task(title = title), userId)
     }
 
     fun addEntry(startTime: Long, endTime: Long, taskId: Long) {
-        entryRepository.insertEntry(Entry(startTime = startTime, endTime = endTime, taskId = taskId))
+        entryRepository.insertEntry(Entry(startTime = startTime, endTime = endTime, taskId = taskId), userId)
+    }
+
+    fun getEntriesByTask(taskId: Long): LiveData<List<TaskEntry>> {
+        return entryRepository.getEntriesByTask(userId, taskId)
     }
 
     fun deleteEntry(entryId: Long) {
-        entryRepository.deleteEntry(entryId)
+        entryRepository.deleteEntry(entryId, userId)
+    }
+
+    fun setUserId(uId: String) {
+        userId = uId
+
+        allTasks = taskRepository.getAllTasks(uId)
+        allEntries = entryRepository.getAllEntries(uId)
     }
 
     init {
@@ -32,7 +43,7 @@ class MainViewModel(application: Application) : ViewModel() {
         val entryDao = applicationDatabase.entryDao()
         entryRepository = EntryRepository(entryDao)
 
-        allTasks = taskRepository.allTasks
-        allEntries = entryRepository.allEntries
+        allTasks = taskRepository.getAllTasks(userId)
+        allEntries = entryRepository.getAllEntries(userId)
     }
 }

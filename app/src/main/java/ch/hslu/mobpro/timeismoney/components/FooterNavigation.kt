@@ -47,12 +47,12 @@ open class Tab(
     )
     object Overview : Tab(
         "Übersicht",
-        "loginScreen",
+        "overviewScreen",
         Icons.Filled.List
     )
     object Settings : Tab(
         "Einstellungen",
-        "homeScreen",
+        "settingScreen",
         Icons.Filled.Settings
     )
 }

@@ -16,6 +16,7 @@ import ch.hslu.mobpro.timeismoney.room.Task
 fun SelectTask(
     items: List<Task>? = null,
     selected: Task? = null,
+    enabled: Boolean = true,
     onItemSelected: (Task) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -23,7 +24,7 @@ fun SelectTask(
     Box(
         modifier = Modifier
             .wrapContentSize()
-            .clickable { expanded = true }
+            .clickable { expanded = enabled }
     ) {
         Text(
             text = selected?.title ?: "Aufgabe auswählen",

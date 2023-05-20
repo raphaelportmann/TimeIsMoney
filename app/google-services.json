@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "317527536396",
+    "project_id": "timeismoney-7a15c",
+    "storage_bucket": "timeismoney-7a15c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:317527536396:android:77ceb4da884dab18e20f29",
+        "android_client_info": {
+          "package_name": "ch.hslu.mobpro.timeismoney"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "317527536396-ao4rptqme8vpmp6qm92hio5l74gmj9p2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAavBkW9NqcMHoHK51pF8jc0wi_aujJXfo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "317527536396-ao4rptqme8vpmp6qm92hio5l74gmj9p2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

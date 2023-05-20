@@ -1,12 +1,8 @@
 package ch.hslu.mobpro.timeismoney
 
-import ch.hslu.mobpro.timeismoney.service.TimeService
+import android.app.ActivityManager
 import android.app.DatePickerDialog
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import androidx.activity.compose.BackHandler
+import android.content.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,29 +19,51 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.navigation.NavController
 import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK
 import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK_ID
 import ch.hslu.mobpro.timeismoney.components.*
-import ch.hslu.mobpro.timeismoney.room.Entry
 import ch.hslu.mobpro.timeismoney.room.Task
 import ch.hslu.mobpro.timeismoney.room.TaskEntry
+import ch.hslu.mobpro.timeismoney.service.TimeService
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import java.time.*
 import java.time.format.DateTimeFormatter
 import kotlin.math.floor
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
+    val context = LocalContext.current
+    val auth = Firebase.auth
+    val currentUser = auth.currentUser
+    val pref: SharedPreferences =
+        context.getApplicationContext().getSharedPreferences(currentUser?.uid ?: "StandardUser", 0)
 
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-
     val allEntries by viewModel.allEntries.observeAsState()
     val allTasks by viewModel.allTasks.observeAsState()
-    var selectedTask by remember { mutableStateOf(allTasks?.firstOrNull()) }
+    var selectedTask by remember { mutableStateOf(allTasks?.filter { task: Task -> task.id == pref.getLong("lastTask", -1) }?.firstOrNull()) }
 
-    val context = LocalContext.current
-    var isTimerRunning by remember { mutableStateOf(false) }
+    var isTimerRunning by remember { mutableStateOf(isServiceRunning(context, TimeService::class.java)) }
+    LaunchedEffect(key1 = Unit) {
+        viewModel.setUserId(currentUser?.uid ?: "")
+        selectedDate = LocalDate.now()
+        selectedTask = allTasks?.filter { task: Task -> task.id == pref.getLong("lastTask", -1) }?.firstOrNull()
+    }
+    LaunchedEffect(isTimerRunning) {
+        val intent = Intent(context, TimeService::class.java)
+        if (isTimerRunning) {
+            intent.putExtra(EXTRA_TASK, selectedTask?.title)
+            intent.putExtra(EXTRA_TASK_ID, selectedTask?.id)
+            context.startService(intent)
+        } else {
+            context.stopService(intent)
+        }
+    }
     val serviceStoppedReceiver = remember {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -66,19 +84,10 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
             context.unregisterReceiver(serviceStoppedReceiver)
         }
     }
-    LaunchedEffect(isTimerRunning) {
-        val intent = Intent(context, TimeService::class.java)
-        if (isTimerRunning) {
-            intent.putExtra(EXTRA_TASK, selectedTask?.title)
-            intent.putExtra(EXTRA_TASK_ID, selectedTask?.id)
-            context.startService(intent)
-        } else {
-            context.stopService(intent)
-        }
-    }
-
-    BackHandler(enabled = isTimerRunning) {
-        isTimerRunning = false
+    LaunchedEffect(key1 = selectedTask) {
+        var editor = pref.edit()
+        editor.putLong("lastTask", selectedTask?.id ?: -1)
+        editor.commit()
     }
 
     Scaffold(
@@ -158,6 +167,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                         SelectTask(
                             items = allTasks,
                             selected = selectedTask,
+                            enabled = !isTimerRunning
                         ) {
                             selectedTask = it
                         }
@@ -178,6 +188,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                         Spacer(modifier = Modifier.width(16.dp))
                         Button(
                             onClick = { isTimerRunning = !isTimerRunning },
+                            enabled = selectedTask != null
                         ) {
                             Icon(if (isTimerRunning) Icons.Filled.Done else Icons.Filled.PlayArrow, "Start")
                         }
@@ -196,6 +207,11 @@ fun isTimestampOnDate(timestamp: Long, date: LocalDate): Boolean {
     val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
     val dateTimeDate = dateTime.toLocalDate()
     return dateTimeDate == date
+}
+fun dateOfTimestamp(timestamp: Long): String{
+    val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
+    val formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu")
+    return dateTime.format(formatter)
 }
 
 fun getFormattedTimeStr(startTime: Long, endTime: Long): String {
@@ -219,4 +235,14 @@ fun getTotalTime(entries: List<TaskEntry>): String {
     val hours = floor(duration.toDouble() / 60).toInt()
     val minutes = duration % 60
     return String.format("%02dh %02dm", hours, minutes)
+}
+
+private fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
+    val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?
+    for (service in manager!!.getRunningServices(Int.MAX_VALUE)) {
+        if (serviceClass.name == service.service.className) {
+            return true
+        }
+    }
+    return false
 }

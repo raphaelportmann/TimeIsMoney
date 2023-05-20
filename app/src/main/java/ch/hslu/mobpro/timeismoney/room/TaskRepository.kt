@@ -2,23 +2,29 @@ package ch.hslu.mobpro.timeismoney.room
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class TaskRepository(private val taskDao: TaskDao) {
-    val allTasks: LiveData<List<Task>> = taskDao.getTasks()
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-    fun insertTask(task: Task) {
+    fun getAllTasks(userId: String): LiveData<List<Task>> {
+        return taskDao.getTasks(userId);
+    }
+
+    fun insertTask(task: Task, userId: String) {
+        task.userId = userId
         coroutineScope.launch(Dispatchers.IO) {
             taskDao.insertTask(task)
         }
     }
 
-    fun deleteTask(task: Task) {
+    fun deleteTask(task: Task, userId: String) {
         coroutineScope.launch(Dispatchers.IO) {
-            taskDao.deleteTask(task.id)
+            taskDao.deleteTask(task.id, userId)
         }
     }
 }
