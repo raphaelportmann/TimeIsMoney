@@ -15,6 +15,6 @@ interface EntryDao {
     @Query("SELECT * FROM entries WHERE id = :id")
     fun getEntry(id: Long): LiveData<Entry>
 
-    @Query("DELETE FROM products WHERE id = :id")
+    @Query("DELETE FROM entries WHERE id = :id")
     fun deleteEntry(id: Long)
 }
