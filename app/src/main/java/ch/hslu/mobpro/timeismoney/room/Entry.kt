@@ -10,4 +10,10 @@ class Entry {
     var startTime: Long = 0
     var endTime: Long = 0
     var taskId: Long = 0
+
+    constructor(startTime: Long, endTime: Long, taskId: Long) {
+        this.startTime = startTime
+        this.endTime = endTime
+        this.taskId = taskId
+    }
 }
