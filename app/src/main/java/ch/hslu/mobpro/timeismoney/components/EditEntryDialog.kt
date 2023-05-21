@@ -5,6 +5,7 @@ import android.app.TimePickerDialog
 import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
@@ -12,6 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +28,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun EditEntryDialog(
+    title: String = "Eintrag bearbeiten",
     selectedDate: LocalDate,
     selectedStartTime: LocalTime,
     selectedEndTime: LocalTime,
@@ -51,15 +54,16 @@ fun EditEntryDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Eintrag bearbeiten") },
+        title = { Text(text = title) },
         text = {
             Column() {
-                Row() {
+                Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Datum: ")
                     Text(
                         text = date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
+                        textAlign = TextAlign.Right,
                         modifier = Modifier
                             .weight(1f)
                             .clickable {
@@ -76,12 +80,13 @@ fun EditEntryDialog(
                     )
                 }
 
-                Row() {
+                Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Startzeit: ")
                     Text(
                         text = startTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
+                        textAlign = TextAlign.Right,
                         modifier = Modifier
                             .weight(1f)
                             .clickable {
@@ -98,12 +103,13 @@ fun EditEntryDialog(
                     )
                 }
 
-                Row() {
+                Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Endzeit: ")
                     Text(
                         text = endTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
+                        textAlign = TextAlign.Right,
                         modifier = Modifier
                             .weight(1f)
                             .clickable {
@@ -119,12 +125,15 @@ fun EditEntryDialog(
                             },
                     )
                 }
-                SelectTask(
-                    items = allTasks,
-                    selected = task,
-                    enabled = true
-                ) {
-                    task = it
+                Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Task: ")
+                    SelectTask(
+                        items = allTasks,
+                        selected = task,
+                        enabled = true
+                    ) {
+                        task = it
+                    }
                 }
             }
         },

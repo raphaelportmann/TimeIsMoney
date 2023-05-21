@@ -37,6 +37,7 @@ fun CreateEntryDialog(
     var selectedEndTime by remember { mutableStateOf(LocalTime.now()) }
 
     EditEntryDialog(
+        "Eintrag erfassen",
         selectedDate,
         selectedStartTime,
         selectedEndTime,

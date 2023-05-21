@@ -77,6 +77,7 @@ fun OverviewScreen(navController: NavController, viewModel: MainViewModel) {
                                         val endInstant = Instant.ofEpochMilli(entry.endTime)
                                             .atZone(ZoneId.systemDefault())
                                         EditEntryDialog(
+                                            "Eintrag bearbeiten",
                                             selectedDate = startInstant.toLocalDate(),
                                             selectedStartTime = startInstant.toLocalTime(),
                                             selectedEndTime = endInstant.toLocalTime(),

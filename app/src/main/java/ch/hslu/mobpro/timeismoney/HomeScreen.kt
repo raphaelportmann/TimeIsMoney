@@ -142,6 +142,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                                         val startInstant = Instant.ofEpochMilli(entry.startTime).atZone(ZoneId.systemDefault())
                                         val endInstant = Instant.ofEpochMilli(entry.endTime).atZone(ZoneId.systemDefault())
                                         EditEntryDialog(
+                                            "Eintrag bearbeiten",
                                             selectedDate = startInstant.toLocalDate(),
                                             selectedStartTime = startInstant.toLocalTime(),
                                             selectedEndTime= endInstant.toLocalTime(),
