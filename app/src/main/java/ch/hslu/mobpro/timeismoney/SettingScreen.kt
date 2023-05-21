@@ -36,7 +36,6 @@ fun SettingScreen(navController: NavController, viewModel: MainViewModel) {
                 val endTime = intent?.getLongExtra("endTime", -1) ?: -1
                 val taskId = intent?.getLongExtra("taskId", -1) ?: -1
                 viewModel.addEntry(startTime, endTime, taskId)
-                println("Added entry: " + taskId)
             }
         }
     }

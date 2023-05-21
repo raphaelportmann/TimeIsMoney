@@ -44,6 +44,7 @@ class TimeService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         stopService()
+        sendBroadcast()
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -102,16 +103,18 @@ class TimeService : Service() {
             .build()
     }
 
-    private fun stopService() {
-        handler.removeCallbacks(runnable)
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
-
+    private fun sendBroadcast() {
         val intent = Intent(ACTION_SERVICE_STOPPED)
         intent.putExtra("startTime", startTime)
         intent.putExtra("endTime", System.currentTimeMillis())
         intent.putExtra("taskId", taskId)
         sendBroadcast(intent)
+    }
+
+    private fun stopService() {
+        handler.removeCallbacks(runnable)
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
     companion object {
