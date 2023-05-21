@@ -66,6 +66,7 @@ fun OverviewScreen(navController: NavController, viewModel: MainViewModel) {
                         SelectTask(
                             items = allTasks,
                             selected = selectedTask,
+                            enabled = true
                         ) {
                             selectedTask = it
                         }

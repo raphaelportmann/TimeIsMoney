@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.navigation.NavController
 import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK
 import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK_ID
@@ -124,10 +123,8 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        LazyColumn(modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()) {
+                    Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                        LazyColumn() {
                             items(allEntries?.filter { taskEntry -> isTimestampOnDate(taskEntry.startTime, selectedDate)
                             }?.size ?: 0) { entryIndex ->
                                 val entry = allEntries!![entryIndex]
@@ -144,6 +141,30 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                                     }
                                 }
                             }
+                        }
+
+                        var showDialog by remember { mutableStateOf(false) }
+                        if (showDialog) {
+                            CreateEntryDialog(
+                                selectedDate,
+                                viewModel,
+                                onConfirm = { date: LocalDate, startTime: LocalTime, endTime: LocalTime, taskId: Long ->
+                                    viewModel.addEntry(
+                                        LocalDateTime.of(date, startTime).toInstant(
+                                            ZoneId.systemDefault().rules.getOffset(Instant.now())
+                                        ).toEpochMilli(),
+                                        LocalDateTime.of(date, endTime).toInstant(
+                                            ZoneId.systemDefault().rules.getOffset(Instant.now())
+                                        ).toEpochMilli(),
+                                        taskId
+                                    )
+                                    showDialog = false
+                                }) { showDialog = false }
+                        }
+                        Button(onClick = {
+                            showDialog = true
+                        }) {
+                            Text(text = "Manuell erfassen")
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
