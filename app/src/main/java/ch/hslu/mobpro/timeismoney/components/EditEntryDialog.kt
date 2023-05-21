@@ -134,9 +134,9 @@ fun EditEntryDialog(
                 onClick = {
                     if (task != null) {
                         onConfirm(
-                            selectedDate,
-                            selectedStartTime,
-                            selectedEndTime,
+                            date,
+                            startTime,
+                            endTime,
                             task?.id ?: -1
                         )
                         onDismiss()

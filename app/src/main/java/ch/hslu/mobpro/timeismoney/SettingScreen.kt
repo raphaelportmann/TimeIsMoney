@@ -77,6 +77,7 @@ fun SettingScreen(navController: NavController, viewModel: MainViewModel) {
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(text = "Angemeldet als: " + currentUser?.email)
+                    Spacer(modifier = Modifier.height(4.dp))
                     Button(onClick = {
                         val intent = Intent(context, TimeService::class.java)
                         context.stopService(intent)
