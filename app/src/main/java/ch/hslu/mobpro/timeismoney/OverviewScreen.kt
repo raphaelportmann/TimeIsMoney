@@ -1,5 +1,9 @@
 package ch.hslu.mobpro.timeismoney
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +15,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -18,6 +23,7 @@ import androidx.navigation.NavController
 import ch.hslu.mobpro.timeismoney.components.*
 import ch.hslu.mobpro.timeismoney.room.Entry
 import ch.hslu.mobpro.timeismoney.room.Task
+import ch.hslu.mobpro.timeismoney.service.TimeService
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import java.time.*
@@ -35,6 +41,26 @@ fun OverviewScreen(navController: NavController, viewModel: MainViewModel) {
         viewModel.setUserId(currentUser?.uid ?: "")
         selectedTask = null
 
+    }
+
+    val context = LocalContext.current
+    val serviceStoppedReceiver = remember {
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val startTime = intent?.getLongExtra("startTime", -1) ?: -1
+                val endTime = intent?.getLongExtra("endTime", -1) ?: -1
+                val taskId = intent?.getLongExtra("taskId", -1) ?: -1
+                viewModel.addEntry(startTime, endTime, taskId)
+            }
+        }
+    }
+    DisposableEffect(Unit) {
+        val intentFilter = IntentFilter(TimeService.ACTION_SERVICE_STOPPED)
+        context.registerReceiver(serviceStoppedReceiver, intentFilter)
+
+        onDispose {
+            context.unregisterReceiver(serviceStoppedReceiver)
+        }
     }
 
     Scaffold(
