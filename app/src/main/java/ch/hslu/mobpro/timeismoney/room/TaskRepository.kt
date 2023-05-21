@@ -27,4 +27,10 @@ class TaskRepository(private val taskDao: TaskDao) {
             taskDao.deleteTask(task.id, userId)
         }
     }
+
+    fun deleteAllTasks(userId: String) {
+        coroutineScope.launch(Dispatchers.IO) {
+            taskDao.deleteAllTasks(userId)
+        }
+    }
 }

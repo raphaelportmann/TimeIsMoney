@@ -27,9 +27,22 @@ class EntryRepository(private val entryDao: EntryDao) {
         }
     }
 
+    fun updateEntry(entry: Entry, userId: String) {
+        entry.userId = userId
+        coroutineScope.launch(Dispatchers.IO) {
+            entryDao.updateEntry(entry)
+        }
+    }
+
     fun deleteEntry(entryId: Long, userId: String) {
         coroutineScope.launch(Dispatchers.IO) {
             entryDao.deleteEntry(entryId, userId)
+        }
+    }
+
+    fun deleteAllEntries(userId: String) {
+        coroutineScope.launch(Dispatchers.IO) {
+            entryDao.deleteAllEntries(userId)
         }
     }
 }

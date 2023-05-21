@@ -23,10 +23,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import ch.hslu.mobpro.timeismoney.components.CreateTaskDialog
-import ch.hslu.mobpro.timeismoney.components.FooterNavigation
-import ch.hslu.mobpro.timeismoney.components.SelectTask
-import ch.hslu.mobpro.timeismoney.components.Tab
+import ch.hslu.mobpro.timeismoney.components.*
+import ch.hslu.mobpro.timeismoney.room.Entry
+import ch.hslu.mobpro.timeismoney.room.Task
 import ch.hslu.mobpro.timeismoney.room.TaskEntry
 import ch.hslu.mobpro.timeismoney.service.TimeService
 import com.google.firebase.auth.ktx.auth
@@ -80,7 +79,40 @@ fun OverviewScreen(navController: NavController, viewModel: MainViewModel) {
                             items(allEntries?.size ?: 0) { entryIndex ->
                                 val entry = allEntries!![entryIndex]
                                 Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween){
-                                    Column() {
+                                    var showDialog by remember { mutableStateOf(false) }
+                                    if (showDialog) {
+                                        val startInstant = Instant.ofEpochMilli(entry.startTime)
+                                            .atZone(ZoneId.systemDefault())
+                                        val endInstant = Instant.ofEpochMilli(entry.endTime)
+                                            .atZone(ZoneId.systemDefault())
+                                        EditEntryDialog(
+                                            selectedDate = startInstant.toLocalDate(),
+                                            selectedStartTime = startInstant.toLocalTime(),
+                                            selectedEndTime = endInstant.toLocalTime(),
+                                            selectedTask = allTasks?.filter { task: Task -> task.id == entry.taskId }
+                                                ?.firstOrNull(),
+                                            viewModel,
+                                            onConfirm = { date: LocalDate, startTime: LocalTime, endTime: LocalTime, taskId: Long ->
+                                                viewModel.updateEntry(
+                                                    Entry(
+                                                        LocalDateTime.of(date, startTime).toInstant(
+                                                            ZoneId.systemDefault().rules.getOffset(
+                                                                Instant.now()
+                                                            )
+                                                        ).toEpochMilli(),
+                                                        LocalDateTime.of(date, endTime).toInstant(
+                                                            ZoneId.systemDefault().rules.getOffset(
+                                                                Instant.now()
+                                                            )
+                                                        ).toEpochMilli(),
+                                                        taskId,
+                                                        entry.id
+                                                    )
+                                                )
+                                                showDialog = false
+                                            }) { showDialog = false }
+                                    }
+                                    Column(modifier = Modifier.clickable { showDialog = true }) {
                                         Text(text = dateOfTimestamp(entry.startTime), fontWeight = FontWeight.Bold, fontSize = 18.sp)
                                         Text(text = getFormattedTimeStr(entry.startTime, entry.endTime), fontSize = 14.sp)
                                     }

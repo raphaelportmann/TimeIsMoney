@@ -12,9 +12,10 @@ class Entry {
     var taskId: Long = 0
     var userId: String = ""
 
-    constructor(startTime: Long, endTime: Long, taskId: Long) {
+    constructor(startTime: Long, endTime: Long, taskId: Long, id: Long = 0) {
         this.startTime = startTime
         this.endTime = endTime
         this.taskId = taskId
+        this.id = id
     }
 }

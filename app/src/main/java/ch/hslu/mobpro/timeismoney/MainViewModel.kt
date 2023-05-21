@@ -17,8 +17,16 @@ class MainViewModel(application: Application, private var userId: String) : View
         taskRepository.insertTask(Task(title = title), userId)
     }
 
+    fun deleteAllTasks() {
+        taskRepository.deleteAllTasks(userId)
+    }
+
     fun addEntry(startTime: Long, endTime: Long, taskId: Long) {
         entryRepository.insertEntry(Entry(startTime = startTime, endTime = endTime, taskId = taskId), userId)
+    }
+
+    fun updateEntry(entry: Entry) {
+        entryRepository.updateEntry(entry, userId)
     }
 
     fun getEntriesByTask(taskId: Long): LiveData<List<TaskEntry>> {
@@ -27,6 +35,10 @@ class MainViewModel(application: Application, private var userId: String) : View
 
     fun deleteEntry(entryId: Long) {
         entryRepository.deleteEntry(entryId, userId)
+    }
+
+    fun deleteAllEntries() {
+        entryRepository.deleteAllEntries(userId)
     }
 
     fun setUserId(uId: String) {

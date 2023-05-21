@@ -9,6 +9,9 @@ interface EntryDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertEntry(entry: Entry)
 
+    @Update
+    fun updateEntry(entry: Entry)
+
     @Query("SELECT entries.*, tasks.title FROM entries LEFT JOIN tasks ON tasks.id = entries.taskId WHERE entries.userId = :userId")
     fun getEntries(userId: String): LiveData<List<TaskEntry>>
 
@@ -20,4 +23,7 @@ interface EntryDao {
 
     @Query("DELETE FROM entries WHERE id = :id AND userId = :userId")
     fun deleteEntry(id: Long, userId: String)
+
+    @Query("DELETE FROM entries WHERE userId = :userId")
+    fun deleteAllEntries(userId: String)
 }

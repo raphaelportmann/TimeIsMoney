@@ -23,6 +23,7 @@ import androidx.navigation.NavController
 import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK
 import ch.hslu.mobpro.timeismoney.MainActivity.Companion.EXTRA_TASK_ID
 import ch.hslu.mobpro.timeismoney.components.*
+import ch.hslu.mobpro.timeismoney.room.Entry
 import ch.hslu.mobpro.timeismoney.room.Task
 import ch.hslu.mobpro.timeismoney.room.TaskEntry
 import ch.hslu.mobpro.timeismoney.service.TimeService
@@ -123,26 +124,80 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                    Column(modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .padding(start = 16.dp, end = 16.dp)) {
                         LazyColumn() {
-                            items(allEntries?.filter { taskEntry -> isTimestampOnDate(taskEntry.startTime, selectedDate)
+                            items(allEntries?.filter { taskEntry ->
+                                isTimestampOnDate(taskEntry.startTime, selectedDate)
                             }?.size ?: 0) { entryIndex ->
                                 val entry = allEntries!![entryIndex]
-                                Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween){
-                                    Column() {
-                                        Text(text = entry.title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                                        Text(text = getFormattedTimeStr(entry.startTime, entry.endTime), fontSize = 14.sp)
+                                Row(
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    var showDialog by remember { mutableStateOf(false) }
+                                    if (showDialog) {
+                                        val startInstant = Instant.ofEpochMilli(entry.startTime).atZone(ZoneId.systemDefault())
+                                        val endInstant = Instant.ofEpochMilli(entry.endTime).atZone(ZoneId.systemDefault())
+                                        EditEntryDialog(
+                                            selectedDate = startInstant.toLocalDate(),
+                                            selectedStartTime = startInstant.toLocalTime(),
+                                            selectedEndTime= endInstant.toLocalTime(),
+                                            selectedTask = allTasks?.filter { task: Task -> task.id == entry.taskId }?.firstOrNull(),
+                                            viewModel,
+                                            onConfirm = { date: LocalDate, startTime: LocalTime, endTime: LocalTime, taskId: Long ->
+                                                viewModel.updateEntry(
+                                                    Entry(
+                                                        LocalDateTime.of(date, startTime).toInstant(
+                                                            ZoneId.systemDefault().rules.getOffset(Instant.now())
+                                                        ).toEpochMilli(),
+                                                        LocalDateTime.of(date, endTime).toInstant(
+                                                            ZoneId.systemDefault().rules.getOffset(Instant.now())
+                                                        ).toEpochMilli(),
+                                                        taskId,
+                                                        entry.id
+                                                    )
+                                                )
+                                                showDialog = false
+                                            }) { showDialog = false }
                                     }
-                                    Button(onClick = {
-                                        viewModel.deleteEntry(entry.id)
-                                    }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                                    Column(modifier = Modifier.clickable { showDialog = true }) {
+                                        Text(
+                                            text = entry.title,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 18.sp
+                                        )
+                                        Text(
+                                            text = getFormattedTimeStr(
+                                                entry.startTime,
+                                                entry.endTime
+                                            ), fontSize = 14.sp
+                                        )
+                                    }
+                                    Button(
+                                        onClick = {
+                                            viewModel.deleteEntry(entry.id)
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                                     ) {
                                         Icon(Icons.Filled.Delete, "Delete")
                                     }
                                 }
                             }
                         }
-
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "Total: " + allEntries?.filter { taskEntry -> isTimestampOnDate(taskEntry.startTime, selectedDate) }
+                            ?.let { it -> getTotalTime(it) })
                         var showDialog by remember { mutableStateOf(false) }
                         if (showDialog) {
                             CreateEntryDialog(
@@ -167,21 +222,12 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                             Text(text = "Manuell erfassen")
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "Total: " + allEntries?.filter { taskEntry -> isTimestampOnDate(taskEntry.startTime, selectedDate) }
-                            ?.let { it -> getTotalTime(it) })
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
+                            .height(50.dp)
+                            .padding(end = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         var showDialog by remember { mutableStateOf(false) }

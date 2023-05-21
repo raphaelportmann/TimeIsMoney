@@ -20,4 +20,7 @@ interface TaskDao {
 
     @Query("DELETE FROM tasks WHERE id = :id AND userId = :userId")
     fun deleteTask(id: Long, userId: String)
+
+    @Query("DELETE FROM tasks WHERE userId = :userId")
+    fun deleteAllTasks(userId: String)
 }
