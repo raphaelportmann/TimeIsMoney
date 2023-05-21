@@ -18,7 +18,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import ch.hslu.mobpro.timeismoney.MainViewModel
-import ch.hslu.mobpro.timeismoney.room.Entry
 import ch.hslu.mobpro.timeismoney.room.Task
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -40,13 +39,13 @@ fun EditEntryDialog(
     val currentUser = auth.currentUser
     val pref: SharedPreferences =
         context.getApplicationContext().getSharedPreferences(currentUser?.uid ?: "StandardUser", 0)
-    var selectedDate by remember { mutableStateOf(selectedDate) }
-    var selectedStartTime by remember { mutableStateOf(selectedStartTime) }
-    var selectedEndTime by remember { mutableStateOf(selectedEndTime) }
+    var date by remember { mutableStateOf(selectedDate) }
+    var startTime by remember { mutableStateOf(selectedStartTime) }
+    var endTime by remember { mutableStateOf(selectedEndTime) }
     val allTasks by viewModel.allTasks.observeAsState()
-    var selectedTask by remember {
+    var task by remember {
         mutableStateOf(allTasks?.filter { task: Task ->
-            task.id == selectedTask?.id ?: pref.getLong("lastTask", -1)
+            task.id == (selectedTask?.id ?: pref.getLong("lastTask", -1))
         }?.firstOrNull())
     }
 
@@ -57,7 +56,7 @@ fun EditEntryDialog(
             Column() {
                 Row() {
                     Text(
-                        text = selectedDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                        text = date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -67,11 +66,11 @@ fun EditEntryDialog(
                                 DatePickerDialog(
                                     context,
                                     { _, year, month, dayOfMonth ->
-                                        selectedDate = LocalDate.of(year, month + 1, dayOfMonth)
+                                        date = LocalDate.of(year, month + 1, dayOfMonth)
                                     },
-                                    selectedDate.year,
-                                    selectedDate.monthValue - 1,
-                                    selectedDate.dayOfMonth
+                                    date.year,
+                                    date.monthValue - 1,
+                                    date.dayOfMonth
                                 ).show()
                             },
                     )
@@ -79,7 +78,7 @@ fun EditEntryDialog(
 
                 Row() {
                     Text(
-                        text = selectedStartTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                        text = startTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -89,10 +88,10 @@ fun EditEntryDialog(
                                 TimePickerDialog(
                                     context,
                                     { _, hour, minute ->
-                                        selectedStartTime = LocalTime.of(hour, minute, 0)
+                                        startTime = LocalTime.of(hour, minute, 0)
                                     },
-                                    selectedStartTime.hour,
-                                    selectedStartTime.minute,
+                                    startTime.hour,
+                                    startTime.minute,
                                     true
                                 ).show()
                             },
@@ -101,7 +100,7 @@ fun EditEntryDialog(
 
                 Row() {
                     Text(
-                        text = selectedEndTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                        text = endTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -111,10 +110,10 @@ fun EditEntryDialog(
                                 TimePickerDialog(
                                     context,
                                     { _, hour, minute ->
-                                        selectedEndTime = LocalTime.of(hour, minute, 0)
+                                        endTime = LocalTime.of(hour, minute, 0)
                                     },
-                                    selectedEndTime.hour,
-                                    selectedEndTime.minute,
+                                    endTime.hour,
+                                    endTime.minute,
                                     true
                                 ).show()
                             },
@@ -122,10 +121,10 @@ fun EditEntryDialog(
                 }
                 SelectTask(
                     items = allTasks,
-                    selected = selectedTask,
+                    selected = task,
                     enabled = true
                 ) {
-                    selectedTask = it
+                    task = it
                 }
             }
         },
@@ -133,18 +132,18 @@ fun EditEntryDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    if (selectedTask != null) {
+                    if (task != null) {
                         onConfirm(
                             selectedDate,
                             selectedStartTime,
                             selectedEndTime,
-                            selectedTask?.id ?: -1
+                            task?.id ?: -1
                         )
                         onDismiss()
                     } else {
                         Toast.makeText(
                             context,
-                            "Bitte wähle einen Task aus!",
+                            "Bitte wähle eine Aufgabe aus!",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
