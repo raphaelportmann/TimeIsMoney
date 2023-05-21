@@ -57,7 +57,8 @@ fun OverviewScreen(navController: NavController, viewModel: MainViewModel) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
+                            .height(50.dp)
+                            .padding(start = 16.dp, end = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(text = "Task: ")
@@ -72,7 +73,10 @@ fun OverviewScreen(navController: NavController, viewModel: MainViewModel) {
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     // top row with date and navigation buttons
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .padding(start = 16.dp, end = 16.dp)) {
                         LazyColumn(modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()) {
@@ -129,8 +133,10 @@ fun OverviewScreen(navController: NavController, viewModel: MainViewModel) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = "Total: " + allEntries?.let { it -> getTotalTime(it) })
                     }

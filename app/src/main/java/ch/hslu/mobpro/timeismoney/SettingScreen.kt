@@ -52,9 +52,12 @@ fun SettingScreen(navController: NavController, viewModel: MainViewModel) {
     Scaffold(
         content = {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-                Column(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(it), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(it),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Button(onClick = {
                         viewModel.deleteAllEntries()
                         Toast.makeText(context, "Alle Einträge gelöscht!", Toast.LENGTH_SHORT).show()
